@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2e2852">
+  <meta name="description" content="夢の中に浮かぶ 2 枚の扉のうち、夢が続くのは片方だけで、もう片方を開けると目が覚める。ただの運を、どこまで深く眠れたかと、その確率（10 枚で 1/1,024）で記録していく。">
+  <title>STAY ASLEEP — 2 枚の扉で、夢を深く</title>
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="STAY ASLEEP">
+  <meta property="og:title" content="STAY ASLEEP — 2 枚の扉で、夢を深く">
+  <meta property="og:description" content="夢の中に浮かぶ 2 枚の扉のうち、夢が続くのは片方だけで、もう片方を開けると目が覚める。ただの運を、どこまで深く眠れたかと、その確率（10 枚で 1/1,024）で記録していく。">
+  <meta property="og:url" content="https://t-of.github.io/stay-asleep/">
+  <meta property="og:image" content="https://t-of.github.io/stay-asleep/icons/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="ja_JP">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- apple-mobile-web-app-status-bar-style は付けない（black-translucent だと iOS 26 で上部が隠れる） -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="STAY ASLEEP">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+
+  <link rel="stylesheet" href="./webapp-kit/webapp-kit.css">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <!-- 夢の空。深さで色が夜へ寄り、節目で月・雲の海・オーロラ・星の渦が重なる -->
+  <div class="sky" id="sky" aria-hidden="true">
+    <div class="aurora"><i></i><i></i><i></i></div>
+    <div class="moon"></div>
+    <div class="motes" id="motes"></div>
+    <div class="flare" id="flare"></div>
+    <div class="clouds"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="morning"></div>
+    <div class="veil" id="veil"></div>
+  </div>
+
+  <main class="app" id="app">
+    <header class="bar">
+      <div class="seg" role="group" aria-label="扉の種類">
+        <button class="seg__btn" id="modeFree" aria-pressed="true">ふだん</button>
+        <button class="seg__btn" id="modeDaily" aria-pressed="false">今日の扉</button>
+      </div>
+      <div class="bar__actions">
+        <button class="pill" id="openStats">記録</button>
+        <button class="pill" id="sound" aria-pressed="true">音 オン</button>
+      </div>
+    </header>
+
+    <div class="play" id="play">
+      <section class="hud" aria-live="polite">
+        <p class="hud__label">深さ</p>
+        <p class="hud__depth" id="depth">0</p>
+        <div class="hud__slot">
+          <div class="hud__info" id="info">
+            <p class="hud__prob" id="prob">夢のはじまり</p>
+            <p class="hud__sub" id="sub">&nbsp;</p>
+          </div>
+          <div class="hud__msg" id="msg" hidden><b id="msgBig"></b><span id="msgSmall"></span></div>
+        </div>
+      </section>
+
+      <section class="stage" id="stage">
+        <div class="coach" id="coach" hidden>
+          <p>夢の中に扉が 2 枚。夢が続くのは、どちらか 1 枚だけ。</p>
+          <p>選んで開ける。夢が続けば、また 2 枚。目が覚めたら終わり。</p>
+          <p>考えても分からない、ただの運。その運を記録する。</p>
+        </div>
+        <div class="world" id="world"></div>
+      </section>
+
+      <p class="seal" id="seal">&nbsp;</p>
+    </div>
+
+    <footer class="foot">
+      <span><a href="/">T.OF...</a> のアプリ</span>
+      <span class="foot__btns">
+        <button class="pill pill--s" data-wak="install" hidden>アプリにする</button>
+        <button class="pill pill--s" data-wak="share">共有</button>
+      </span>
+    </footer>
+  </main>
+
+  <div class="dawn" id="dawn" hidden></div>
+
+  <!-- 目が覚めたあとの結果。上は朝の空 -->
+  <section class="result" id="result" hidden aria-live="polite">
+    <p class="result__title" id="rTitle">目が覚めた</p>
+    <p class="result__depth"><span>深さ</span><b id="rDepth">0</b></p>
+    <p class="result__phrase" id="rPhrase"></p>
+    <p class="result__prob" id="rProb"></p>
+    <p class="result__badges" id="rBadges"></p>
+    <button class="big" id="again">もう一度眠る</button>
+    <p class="result__wait" id="rWait" hidden></p>
+    <div class="result__small">
+      <button class="pill pill--day" id="rShare">共有</button>
+      <button class="pill pill--day" id="rStats">記録</button>
+      <button class="pill pill--day" id="rSeal">封を開ける</button>
+    </div>
+    <p class="result__credit"><a href="/">T.OF...</a> のアプリ</p>
+  </section>
+
+  <!-- 下から出るシート（記録・封を開ける） -->
+  <div class="sheet" id="sheet" hidden>
+    <div class="sheet__back" data-close></div>
+    <section class="sheet__card" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <header class="sheet__head">
+        <h2 id="sheetTitle">記録</h2>
+        <button class="pill" data-close>閉じる</button>
+      </header>
+      <div class="sheet__body" id="sheetBody"></div>
+    </section>
+  </div>
+
+  <script src="./webapp-kit/webapp-kit.js"></script>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

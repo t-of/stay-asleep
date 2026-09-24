@@ -1,0 +1,19 @@
+{
+  "id": "./",
+  "name": "STAY ASLEEP",
+  "short_name": "STAY ASLEEP",
+  "description": "夢の中に浮かぶ 2 枚の扉のうち、夢が続くのは片方だけで、もう片方を開けると目が覚める。ただの運を、どこまで深く眠れたかと、その確率（10 枚で 1/1,024）で記録していく。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#2e2852",
+  "theme_color": "#2e2852",
+  "lang": "ja",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

@@ -1,0 +1,603 @@
+/* 空の色は深さで変わる（main.js が --sky-* と --bg を書きかえる）。@property にしておくと色がなめらかに移る */
+@property --sky-top { syntax: '<color>'; inherits: true; initial-value: #34306a; }
+@property --sky-mid { syntax: '<color>'; inherits: true; initial-value: #6f5f9e; }
+@property --sky-bot { syntax: '<color>'; inherits: true; initial-value: #c3a3d6; }
+
+:root {
+  --bg: #2e2852;
+  --fg: #f3effc;
+  --muted: rgba(243, 239, 252, 0.66);
+  --faint: rgba(243, 239, 252, 0.42);
+  --leaf: #413669;
+  --frame: rgba(255, 255, 255, 0.88);
+  --frame-glow: rgba(255, 255, 255, 0.32);
+  --day-bg: #f7f0e3;          /* 朝の色 */
+  --day-fg: #3b3452;
+  --day-muted: #7a7290;
+  --sheet: #1c1938;
+  /* 扉の大きさ: 幅は画面の約 38%、高さはその 2 倍 */
+  --dw: min(38vw, 190px, 19dvh);
+  --dh: calc(var(--dw) * 2);
+  --gap: calc(var(--dw) * 0.26);
+}
+
+* { box-sizing: border-box; }
+
+/* Safari 26 の上下バーの色は html の背景から取られる。body と同じ色にしておく */
+html { background-color: var(--bg); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+}
+button { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+
+/* ---------- 空 ---------- */
+
+.sky {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--sky-top), var(--sky-mid) 58%, var(--sky-bot));
+  transition: --sky-top 1.4s ease, --sky-mid 1.4s ease, --sky-bot 1.4s ease;
+}
+.veil { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+
+.motes {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--S, 150vmax);
+  height: var(--S, 150vmax);
+  margin: calc(var(--S, 150vmax) / -2) 0 0 calc(var(--S, 150vmax) / -2);
+}
+.mote {
+  position: absolute;
+  width: var(--z, 2px);
+  height: var(--z, 2px);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 6px 1px rgba(236, 230, 255, 0.8);
+  opacity: 0;
+  transition: opacity 1.4s ease;
+}
+.mote.on { opacity: var(--a, 0.8); animation: twinkle var(--t, 3s) ease-in-out var(--d, 0s) infinite alternate; }
+@keyframes twinkle { to { scale: 0.5; filter: brightness(0.7); } }
+/* 深さ 5: 光の粒が深さの数字の所に集まって、一度きらめく */
+.gather .mote { opacity: 0.95; animation: gather 1.6s cubic-bezier(.5, 0, .3, 1) both; transition: none; }
+@keyframes gather {
+  0% { translate: 0 0; }
+  48%, 58% { translate: var(--gx) var(--gy); scale: 0.6; }
+  100% { translate: 0 0; }
+}
+.flare {
+  position: absolute;
+  left: 50%;
+  top: var(--fy, 22%);
+  width: 220px;
+  height: 220px;
+  margin: -110px 0 0 -110px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.95), rgba(226, 214, 255, 0.45) 28%, rgba(226, 214, 255, 0) 68%);
+  opacity: 0;
+  pointer-events: none;
+}
+.gather .flare { animation: flare 1.6s ease-out both; }
+@keyframes flare { 0%, 40% { opacity: 0; scale: 0.2; } 55% { opacity: 1; scale: 1; } 100% { opacity: 0; scale: 1.5; } }
+/* 深さ 40 から: 星がゆっくり渦を巻く */
+.s-swirl .motes { animation: spin 150s linear infinite; }
+@keyframes spin { to { rotate: 360deg; } }
+
+.moon {
+  position: absolute;
+  right: 13%;
+  top: 11%;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 36%, #fdfbf4, #e7e3f0 58%, #cbc6dd);
+  box-shadow: 0 0 28px 6px rgba(232, 228, 255, 0.3), 0 0 90px 30px rgba(196, 190, 255, 0.12);
+  opacity: 0;
+  translate: 0 46vh;
+  transition: opacity 2.2s ease, translate 2.8s cubic-bezier(.2, .7, .2, 1);
+}
+.s-moon .moon { opacity: 1; translate: 0 0; }
+
+.clouds {
+  position: absolute;
+  left: -15%;
+  right: -15%;
+  bottom: -2%;
+  height: 30%;
+  opacity: 0;
+  translate: 0 55%;
+  transition: opacity 2.4s ease, translate 3s cubic-bezier(.2, .7, .2, 1);
+  filter: blur(5px);
+}
+.clouds i {
+  position: absolute;
+  bottom: 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 40%, rgba(226, 222, 246, 0.62), rgba(178, 172, 222, 0.34) 55%, rgba(150, 144, 205, 0) 72%);
+  animation: billow 14s ease-in-out infinite alternate;
+}
+.clouds i:nth-child(1) { left: 0; width: 46%; height: 78%; }
+.clouds i:nth-child(2) { left: 26%; width: 50%; height: 96%; animation-delay: -4s; }
+.clouds i:nth-child(3) { left: 56%; width: 46%; height: 80%; animation-delay: -8s; }
+.clouds i:nth-child(4) { left: 10%; width: 80%; height: 52%; bottom: -12%; animation-delay: -2s; }
+.clouds i:nth-child(5) { left: -4%; width: 108%; height: 34%; bottom: -8%; animation-delay: -6s; }
+@keyframes billow { to { translate: 3% -4%; } }
+.s-clouds .clouds { opacity: 1; translate: 0 0; }
+
+.aurora {
+  position: absolute;
+  left: -30%;
+  right: -30%;
+  top: 2%;
+  height: 40%;
+  opacity: 0;
+  transition: opacity 3s ease;
+  filter: blur(18px);
+  mix-blend-mode: screen;
+}
+.aurora i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 34%;
+  border-radius: 50%;
+  background: linear-gradient(100deg, transparent 12%, rgba(176, 138, 255, 0.55) 32%, rgba(250, 164, 220, 0.38) 50%, rgba(142, 156, 255, 0.5) 68%, transparent 88%);
+  animation: sway 10s ease-in-out infinite alternate;
+}
+.aurora i:nth-child(1) { top: 10%; }
+.aurora i:nth-child(2) { top: 34%; height: 26%; animation-duration: 13s; animation-delay: -5s; opacity: 0.7; }
+.aurora i:nth-child(3) { top: 56%; height: 20%; animation-duration: 16s; animation-delay: -9s; opacity: 0.5; }
+@keyframes sway { from { transform: translateX(-6%) skewX(-12deg) scaleY(0.85); } to { transform: translateX(6%) skewX(10deg) scaleY(1.15); } }
+.s-aurora .aurora { opacity: 0.85; }
+
+/* 朝の空（目が覚めたあと） */
+.morning {
+  position: absolute;
+  inset: 0;
+  display: none;
+  background:
+    radial-gradient(circle at 78% 12%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 38%),
+    linear-gradient(180deg, #eef0f7, var(--day-bg) 46%, #fbf6ec);
+}
+.awake .morning { display: block; }
+.awake .motes, .awake .moon, .awake .clouds, .awake .aurora { display: none; }
+
+/* ---------- 画面の枠 ---------- */
+
+.app {
+  position: relative;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding:
+    max(10px, env(safe-area-inset-top))
+    max(12px, env(safe-area-inset-right))
+    max(8px, env(safe-area-inset-bottom))
+    max(12px, env(safe-area-inset-left));
+}
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; position: relative; z-index: 2; }
+.bar__actions { display: flex; gap: 6px; }
+.pill {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 999px;
+  padding: 0 14px;
+  min-height: 36px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.pill--s { min-height: 32px; font-size: 12px; padding: 0 12px; }
+.seg { display: flex; border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 999px; padding: 2px; background: rgba(255, 255, 255, 0.05); }
+.seg__btn { border: 0; background: none; border-radius: 999px; padding: 0 12px; min-height: 32px; font-size: 13px; color: var(--muted); cursor: pointer; }
+.seg__btn[aria-pressed="true"] { background: rgba(255, 255, 255, 0.16); color: var(--fg); }
+.awake .bar { color: var(--day-fg); }
+.awake .bar .pill, .awake .bar .seg { border-color: rgba(59, 52, 82, 0.18); background: rgba(59, 52, 82, 0.05); }
+.awake .bar .seg__btn { color: var(--day-muted); }
+.awake .bar .seg__btn[aria-pressed="true"] { background: rgba(59, 52, 82, 0.12); color: var(--day-fg); }
+
+.play {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  touch-action: manipulation;   /* ダブルタップ拡大を止める */
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+}
+.awake .play, .awake .foot { display: none; }
+
+/* 深さ */
+.hud { text-align: center; padding-top: 2dvh; }
+.hud p { margin: 0; }
+.hud__label { font-size: 12px; letter-spacing: 0.3em; color: var(--muted); padding-left: 0.3em; }
+.hud__depth {
+  font-size: clamp(64px, 21vw, 104px);
+  font-weight: 200;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 24px rgba(220, 208, 255, 0.25);
+  transition: text-shadow 1s;
+}
+.hud__depth.bump { animation: bump 0.5s cubic-bezier(.2, .8, .2, 1); }
+@keyframes bump { from { scale: 0.86; opacity: 0.4; } }
+.hud__depth.glow { text-shadow: 0 0 18px rgba(255, 255, 255, 0.85), 0 0 46px rgba(210, 196, 255, 0.7); }
+.hud__slot { display: grid; min-height: 64px; }
+.hud__slot > * { grid-area: 1 / 1; }
+.hud__info { transition: opacity 0.3s; }
+.hud__prob { font-size: 14px; color: var(--fg); }
+.hud__prob small { font-size: 11px; color: var(--faint); margin-left: 6px; }
+.hud__sub { font-size: 12px; color: var(--muted); margin-top: 4px !important; }
+.hud__msg { display: flex; flex-direction: column; align-items: center; gap: 4px; animation: msg 1.8s ease both; pointer-events: none; }
+.hud__msg b { font-size: 22px; font-weight: 500; letter-spacing: 0.04em; text-shadow: 0 0 16px rgba(236, 226, 255, 0.8); }
+.hud__msg b.huge { font-size: 34px; font-weight: 300; }
+.hud__msg span { font-size: 13px; color: var(--fg); }
+@keyframes msg { 0% { opacity: 0; translate: 0 6px; } 14%, 80% { opacity: 1; translate: 0 0; } 100% { opacity: 0; } }
+.hud__slot.showing .hud__info { opacity: 0; }
+
+/* ---------- 扉 ---------- */
+
+.stage { flex: 1; min-height: 0; position: relative; }
+.world {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap);
+  transform-origin: 50% 50%;
+}
+.world.zoom { transition: transform 0.55s cubic-bezier(.55, 0, .75, .3), opacity 0.55s; }
+.world.fade { transition: opacity 0.3s; }
+.world.enter { animation: enter 0.6s ease both; }
+@keyframes enter { from { opacity: 0; scale: 0.92; } }
+
+.door {
+  position: relative;
+  flex: none;
+  width: var(--dw);
+  height: var(--dh);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  animation: drift 6s ease-in-out infinite alternate;
+  transition: transform 0.4s cubic-bezier(.2, .7, .2, 1), opacity 0.4s, filter 0.4s;
+  -webkit-tap-highlight-color: transparent;
+}
+.door[data-side="1"] { animation-delay: -3.4s; animation-duration: 6.8s; }
+@keyframes drift { from { translate: 0 -6px; } to { translate: 0 7px; } }
+.holding .door { animation-play-state: paused; }
+.door:focus-visible { outline: none; }
+.door:focus-visible .door__body::after { box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5), 0 0 16px var(--frame-glow); }
+
+/* 下にぼんやり影（浮かんでいる） */
+.door__shadow {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: -30px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(16, 10, 40, 0.42), rgba(16, 10, 40, 0));
+  animation: shadow 6s ease-in-out infinite alternate;
+  animation-delay: inherit;
+  animation-duration: inherit;
+}
+@keyframes shadow { from { scale: 0.86; opacity: 0.7; } to { scale: 1; opacity: 1; } }
+.s-clouds .door__shadow { opacity: 0; animation: none; }
+
+.door__body {
+  position: absolute;
+  inset: 0;
+  border-radius: calc(var(--dw) / 2) calc(var(--dw) / 2) 4px 4px;
+  overflow: hidden;
+  perspective: 720px;
+}
+/* 枠: 細い明るい線。深さ 10 から銀、30 から淡い金 */
+.door__body::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border: 2px solid var(--frame);
+  border-radius: inherit;
+  box-shadow: 0 0 14px var(--frame-glow), inset 0 0 12px var(--frame-glow);
+  pointer-events: none;
+  transition: border-color 1.6s, box-shadow 1.6s;
+}
+.s-moon { --frame: #e2e9f8; --frame-glow: rgba(196, 214, 255, 0.55); }
+.s-aurora { --frame: #f2e4bd; --frame-glow: rgba(242, 228, 189, 0.5); }
+
+.door__beyond { position: absolute; inset: 0; z-index: 0; opacity: 0; transition: opacity 0.3s; }
+.door__leaf {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 40%), var(--leaf);
+  transform-origin: 0 50%;
+  transition: transform 0.6s cubic-bezier(.45, 0, .2, 1), opacity 0.4s;
+}
+.door[data-side="1"] .door__leaf { transform-origin: 100% 50%; }
+.door__leaf::before {
+  content: '';
+  position: absolute;
+  inset: 14% 16% 10%;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: calc(var(--dw) / 2) calc(var(--dw) / 2) 2px 2px;
+}
+/* 取っ手: 小さな丸 1 つ（中の細い線で回ったのが分かる） */
+.door__knob {
+  position: absolute;
+  top: 57%;
+  right: 13%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--frame);
+  box-shadow: 0 0 8px var(--frame-glow);
+  transition: transform 0.25s cubic-bezier(.3, 0, .2, 1);
+}
+.door__knob::after { content: ''; position: absolute; left: 4px; top: 1px; width: 2px; height: 4px; border-radius: 1px; background: rgba(30, 24, 70, 0.55); }
+.door[data-side="1"] .door__knob { right: auto; left: 13%; }
+/* すき間の光（ため）。枠の外へもにじむように、扉の本体の外に置く */
+.door__gap {
+  position: absolute;
+  z-index: 4;
+  top: 12%;
+  bottom: 2px;
+  right: 1px;
+  width: 1px;
+  border-radius: 2px;
+  background: #fff;
+  opacity: 0;
+  box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.9), 0 0 28px 8px rgba(240, 234, 255, 0.45);
+  pointer-events: none;
+}
+.door[data-side="1"] .door__gap { right: auto; left: 1px; }
+
+.is-chosen { transform: scale(1.04); }
+.is-other { transform: scale(0.94); opacity: 0.35; filter: blur(1px); }
+.is-chosen .door__knob { transform: rotate(-80deg); }
+.door[data-side="1"].is-chosen .door__knob { transform: rotate(80deg); }
+.is-chosen .door__leaf { transform: rotateY(4deg); transition-duration: 0.9s; }
+.door[data-side="1"].is-chosen .door__leaf { transform: rotateY(-4deg); }
+.is-chosen .door__gap { animation: gap var(--hold, 900ms) ease-in forwards; }
+@keyframes gap {
+  0%, 26% { opacity: 0; width: 1px; }
+  40% { opacity: 0.7; width: 2px; }
+  100% { opacity: 1; width: 7px; }
+}
+/* 開く: 夢の奥へ押し開ける */
+.is-open .door__leaf { transform: rotateY(82deg); }
+.door[data-side="1"].is-open .door__leaf { transform: rotateY(-82deg); }
+.is-open .door__beyond, .is-peek .door__beyond { opacity: 1; }
+.is-open .door__gap { animation: gapOut 0.35s ease forwards; }
+@keyframes gapOut { from { opacity: 1; width: 7px; } to { opacity: 0; width: 24px; } }
+.is-peek .door__leaf { transform: rotateY(50deg); transition-duration: 0.5s; }
+.door[data-side="1"].is-peek .door__leaf { transform: rotateY(-50deg); }
+.is-peek { opacity: 0.9; filter: none; }
+
+/* 扉の向こうに小さく見える、次の 2 枚 */
+.mini {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--dw) * 2 + var(--gap));
+  height: var(--dh);
+  display: flex;
+  gap: var(--gap);
+  translate: -50% -50%;
+  scale: var(--mini, 0.14);
+}
+.mini i {
+  flex: none;
+  width: var(--dw);
+  height: var(--dh);
+  border: 2px solid var(--frame);
+  border-radius: calc(var(--dw) / 2) calc(var(--dw) / 2) 4px 4px;
+  background: var(--leaf);
+  box-shadow: 0 0 14px var(--frame-glow);
+}
+
+/* 封 */
+.seal {
+  margin: 0;
+  padding: 8px 0 4px;
+  text-align: center;
+  font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.06em;
+  color: var(--faint);
+}
+
+/* はじめての人への 3 行 */
+.coach {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 0;
+  translate: -50% 0;
+  width: min(372px, 100%);
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: rgba(20, 15, 52, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 11.5px;
+  line-height: 1.5;
+  text-align: center;
+  pointer-events: none;
+}
+.coach p { margin: 0; }
+.coach p + p { margin-top: 2px; }
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  opacity: 0.6;
+  position: relative;
+  z-index: 2;
+}
+.foot a { color: inherit; }
+.foot__btns { display: flex; gap: 6px; }
+
+/* ---------- 目が覚める ---------- */
+
+/* 開けた扉から朝の光が広がる。全画面なので隠すときは display: none */
+.dawn { position: fixed; inset: 0; z-index: 20; pointer-events: none; transition: opacity 0.7s ease; }
+.dawn::before {
+  content: '';
+  position: absolute;
+  left: var(--x, 50%);
+  top: var(--y, 60%);
+  width: 280vmax;
+  height: 280vmax;
+  margin: -140vmax 0 0 -140vmax;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0, #fffbf3 22%, #fbf3e4 46%, rgba(251, 243, 228, 0) 70%);
+  scale: 0.02;
+  opacity: 0;
+}
+.dawn.go::before { scale: 1; opacity: 1; transition: scale 0.65s cubic-bezier(.35, 0, .25, 1), opacity 0.3s ease; }
+.dawn.out { opacity: 0; }
+
+.result {
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 22px 20px max(14px, env(safe-area-inset-bottom));
+  border-radius: 24px 24px 0 0;
+  background: #fffdf8;
+  color: var(--day-fg);
+  box-shadow: 0 -10px 40px rgba(120, 100, 150, 0.16);
+  text-align: center;
+  animation: rise 0.6s cubic-bezier(.2, .8, .2, 1) both;
+}
+@keyframes rise { from { translate: 0 100%; } }
+.result p { margin: 0; }
+.result__title { font-size: 15px; letter-spacing: 0.2em; color: var(--day-muted); padding-left: 0.2em; }
+.result__depth { display: flex; justify-content: center; align-items: baseline; gap: 10px; margin-top: 4px !important; }
+.result__depth span { font-size: 14px; color: var(--day-muted); }
+.result__depth b { font-size: 76px; font-weight: 200; line-height: 1; font-variant-numeric: tabular-nums; }
+.result__phrase { font-size: 18px; margin-top: 2px !important; }
+.result__prob { font-size: 13px; color: var(--day-muted); margin-top: 6px !important; }
+.result__badges { display: flex; justify-content: center; gap: 6px; min-height: 26px; margin-top: 8px !important; }
+.result__badges span { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: #ece5fb; color: #54478a; }
+.big {
+  display: block;
+  width: min(100%, 340px);
+  min-height: 58px;
+  margin: 14px auto 0;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #4b4288, #2f2862);
+  color: #f5f1ff;
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(47, 40, 98, 0.28);
+  transition: opacity 0.3s;
+}
+.big:disabled { opacity: 0.45; cursor: default; }
+.result__wait { font-size: 13px; color: var(--day-muted); margin-top: 10px !important; }
+.result__small { display: flex; justify-content: center; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.pill--day { border-color: rgba(59, 52, 82, 0.16); background: rgba(59, 52, 82, 0.04); min-height: 40px; }
+.result__credit { font-size: 11px; color: var(--day-muted); margin-top: 12px !important; }
+.result__credit a { color: inherit; }
+
+/* ---------- シート（記録・封を開ける） ---------- */
+
+.sheet { position: fixed; inset: 0; z-index: 30; }
+.sheet__back { position: absolute; inset: 0; background: rgba(10, 8, 26, 0.55); animation: fadeIn 0.25s ease both; }
+@keyframes fadeIn { from { opacity: 0; } }
+.sheet__card {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: 560px;
+  max-height: 88dvh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  border-radius: 22px 22px 0 0;
+  background: var(--sheet);
+  color: var(--fg);
+  animation: rise 0.35s cubic-bezier(.2, .8, .2, 1) both;
+}
+.sheet__head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 8px; }
+.sheet__head h2 { margin: 0; font-size: 17px; font-weight: 600; }
+.sheet__body { overflow-y: auto; padding: 4px 18px max(18px, env(safe-area-inset-bottom)); font-size: 14px; overscroll-behavior: contain; }
+.sheet__body h3 { font-size: 13px; font-weight: 600; color: var(--muted); margin: 18px 0 8px; }
+.sheet__body p { margin: 6px 0; line-height: 1.55; }
+.note { font-size: 12px; color: var(--muted); }
+.tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+.tabs .seg__btn { border: 1px solid rgba(255, 255, 255, 0.14); min-height: 36px; }
+
+.nums { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.num { background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 10px 12px; }
+.num span { display: block; font-size: 11px; color: var(--muted); }
+.num b { display: block; font-size: 22px; font-weight: 400; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.num small { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.luck { background: rgba(190, 170, 255, 0.12); border-radius: 12px; padding: 10px 12px; margin-top: 8px; }
+.luck b { font-size: 18px; font-weight: 500; }
+
+/* 深さの分布: 棒 = 自分の回数、細い線 = 運がふつうならこのくらい */
+.dist { display: grid; grid-template-columns: 2.2em 1fr 2.8em; gap: 4px 8px; align-items: center; font-size: 12px; font-variant-numeric: tabular-nums; }
+.dist__d { color: var(--muted); text-align: right; }
+.dist__bar { position: relative; height: 14px; border-radius: 3px; background: rgba(255, 255, 255, 0.04); }
+.dist__bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: linear-gradient(90deg, #8f7fe0, #c1b2ff); }
+.dist__bar u { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: #fff; opacity: 0.75; border-radius: 1px; }
+.dist__n { color: var(--muted); }
+.legend { display: flex; gap: 14px; font-size: 11px; color: var(--muted); margin-top: 8px; }
+.legend i { display: inline-block; width: 14px; height: 8px; border-radius: 2px; background: #a797f0; margin-right: 5px; vertical-align: middle; }
+.legend u { display: inline-block; width: 2px; height: 12px; background: #fff; opacity: 0.75; margin-right: 6px; vertical-align: middle; }
+
+.days { display: grid; grid-template-columns: repeat(14, 1fr); gap: 3px; align-items: end; height: 84px; margin-top: 6px; }
+.days div { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; gap: 3px; }
+.days i { width: 100%; min-height: 2px; border-radius: 2px; background: #a797f0; }
+.days i.none { background: rgba(255, 255, 255, 0.08); }
+.days span { font-size: 9px; color: var(--faint); }
+
+.hash { font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 6px 8px; margin: 4px 0 0; user-select: text; -webkit-user-select: text; }
+.match { display: inline-block; margin-top: 10px; padding: 6px 12px; border-radius: 999px; background: rgba(190, 170, 255, 0.18); font-weight: 600; }
+.match.bad { background: rgba(255, 255, 255, 0.1); }
+.seq { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.seq div { display: grid; gap: 2px; text-align: center; font-size: 12px; width: 34px; padding: 4px 0; border-radius: 8px; background: rgba(255, 255, 255, 0.05); }
+.seq div span { font-size: 10px; color: var(--faint); }
+.seq div.miss { background: rgba(255, 250, 236, 0.16); }
+
+@media (prefers-reduced-motion: reduce) {
+  .door, .door__shadow, .clouds i, .aurora i, .mote.on, .s-swirl .motes { animation: none; }
+  .is-chosen, .is-other { transform: none; }
+  .is-chosen .door__leaf, .door[data-side="1"].is-chosen .door__leaf { transform: none; }
+  .is-open .door__leaf, .door[data-side="1"].is-open .door__leaf { transform: none; opacity: 0; }
+  .is-peek .door__leaf, .door[data-side="1"].is-peek .door__leaf { transform: none; opacity: 0.45; }
+  .moon, .clouds { translate: 0 0; }
+  .gather .mote { animation: none; opacity: 0.95; }
+  .gather .flare { animation: flareSoft 1.4s ease both; }
+  @keyframes flareSoft { 0% { opacity: 0; } 40% { opacity: 0.8; } 100% { opacity: 0; } }
+  .dawn::before { scale: 1; }
+  .dawn.go::before { transition: opacity 0.4s ease; }
+  .hud__depth.bump, .result, .sheet__card, .world.enter { animation-duration: 0.01s; }
+  .hud__msg { animation-name: msgSoft; }
+  @keyframes msgSoft { 0% { opacity: 0; } 12%, 82% { opacity: 1; } 100% { opacity: 0; } }
+}
