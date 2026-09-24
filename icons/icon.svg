@@ -1,1 +1,41 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#2e2852"/><text x="256" y="256" dy=".35em" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="700" font-size="280" fill="#eceef3">S</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#191540"/>
+      <stop offset="0.55" stop-color="#5a4c8f"/>
+      <stop offset="1" stop-color="#dcaec6"/>
+    </linearGradient>
+    <radialGradient id="horizon" cx="0.5" cy="1" r="0.8">
+      <stop offset="0" stop-color="#f6cda9" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#f6cda9" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="leak" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff8ea" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#fff8ea" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur1" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="9"/></filter>
+    <filter id="blur2" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="3"/></filter>
+  </defs>
+
+  <rect id="bgshape" width="512" height="512" rx="112" fill="url(#sky)"/>
+  <rect width="512" height="512" rx="112" fill="url(#horizon)"/>
+
+  <circle cx="150" cy="118" r="3.4" fill="#fff" opacity="0.8"/>
+  <circle cx="176" cy="160" r="2.4" fill="#fff" opacity="0.55"/>
+  <circle cx="400" cy="182" r="2.8" fill="#fff" opacity="0.65"/>
+  <circle cx="90" cy="196" r="2.4" fill="#fff" opacity="0.45"/>
+
+  <circle cx="380" cy="150" r="20" fill="#fbf3e6" opacity="0.92"/>
+
+  <ellipse cx="189" cy="386" rx="40" ry="9" fill="#000" opacity="0.28"/>
+  <ellipse cx="323" cy="386" rx="40" ry="9" fill="#000" opacity="0.28"/>
+
+  <circle cx="266" cy="290" r="48" fill="url(#leak)" filter="url(#blur1)"/>
+
+  <path d="M139,206 A50,50 0 0 1 239,206 L239,378 L139,378 Z" fill="#241f42" stroke="#eee9fa" stroke-width="16"/>
+  <circle cx="223" cy="298" r="8" fill="#eee9fa" opacity="0.9"/>
+
+  <path d="M273,206 A50,50 0 0 1 373,206 L373,378 L273,378 Z" fill="#2b2550" stroke="#fff3d6" stroke-width="16"/>
+  <rect x="249" y="216" width="14" height="150" fill="#fff8ea" opacity="0.95" filter="url(#blur2)"/>
+  <circle cx="289" cy="298" r="8" fill="#fff3d6" opacity="0.92"/>
+</svg>
