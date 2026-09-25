@@ -424,11 +424,11 @@ async function play(side, ok, long) {
     await wait(reduced.matches ? 450 : 700);
     run.awake = true;
     showResult(run);
+    busy = false; // ボタンは showResult の 0.5 秒後に押せるようになる。朝の光が消えるのを待たずに受け付ける
     await wait(150);
     dawn.classList.add('out');
     await wait(720);
     dawn.hidden = true;
-    busy = false;
   }
 }
 
