@@ -32,6 +32,7 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const body = document.body;
 const sky = $('#sky'), veil = $('#veil'), motesEl = $('#motes'), flare = $('#flare');
 const world = $('#world'), stage = $('#stage'), dawn = $('#dawn'), result = $('#result');
+const homeEl = $('#home'), appEl = $('#app');
 const depthEl = $('#depth'), slot = $('.hud__slot');
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 
@@ -313,7 +314,6 @@ function show(r, { enter = false } = {}) {
   hud();
   depthEl.classList.remove('glow');
   sfx.drone(droneLevel(r.depth));
-  $('#coach').hidden = settings.coached;
   if (enter) world.classList.add('enter');
 }
 
@@ -328,7 +328,6 @@ function pick(side) {
   const long = best >= 3 && (i + 1 === best || i + 1 === best + 1);
   run.picks.push(side);
   commit(ok);
-  if (!settings.coached) { settings.coached = true; saveSettings(); $('#coach').hidden = true; }
   play(side, ok, long).catch((e) => { console.error(e); busy = false; });
 }
 
@@ -519,6 +518,50 @@ $('#again').addEventListener('click', async () => {
   busy = false;
 });
 
+// ---------- ホーム ----------
+// 開いたらまずここを出す（RULES.md §5）。今日の扉に途中があれば「つづきから」を出す。
+
+function renderHome() {
+  refreshToday();
+  const doneDepth = daily.days[today];
+  const cur = daily.current;
+  const inProgress = cur && cur.date === today && !cur.awake && cur.depth > 0;
+  $('#continueBtn').hidden = !inProgress;
+  $('#homeDailySub').textContent = doneDepth != null
+    ? `深さ ${doneDepth} で目が覚めた`
+    : inProgress ? `深さ ${cur.depth} から続く` : 'まだ開けていない';
+  $('#homeFreeSub').textContent = `ベスト ${stats.best}`;
+}
+
+function showHome() {
+  homeEl.hidden = false;
+  appEl.hidden = true;
+  result.hidden = true;
+  closeSheet();
+  clearInterval(waitTimer);
+  renderHome();
+}
+
+async function enterPlay(m) {
+  homeEl.hidden = true;
+  appEl.hidden = false;
+  busy = true;
+  mode = m;
+  $('#modeFree').setAttribute('aria-pressed', m === 'free');
+  $('#modeDaily').setAttribute('aria-pressed', m === 'daily');
+  if (m === 'free') {
+    if (!runs.free || runs.free.awake) runs.free = await newFreeRun();
+  } else if (!runs.daily || runs.daily.awake || runs.daily.date !== L.dateKey()) {
+    runs.daily = await dailyRun();
+  }
+  show(runs[m], { enter: true });
+  busy = false;
+}
+$('#continueBtn').addEventListener('click', () => { sfx.ui(); enterPlay('daily'); });
+$('#homeFree').addEventListener('click', () => { sfx.ui(); enterPlay('free'); });
+$('#homeDaily').addEventListener('click', () => { sfx.ui(); enterPlay('daily'); });
+$('#homeBtn').addEventListener('click', () => { sfx.ui(); showHome(); });
+
 async function setMode(m) {
   if (busy || (m === mode && run)) return;
   busy = true;
@@ -677,4 +720,5 @@ $('#rSeal').addEventListener('click', async () => {
 renderSound();
 if (!settings.sound) setAudioSession(false);
 buildMotes();
-setMode('free');
+paintSky(0, true);
+showHome();

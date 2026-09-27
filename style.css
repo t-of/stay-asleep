@@ -171,6 +171,62 @@ button { font: inherit; color: inherit; }
 .awake .morning { display: block; }
 .awake .motes, .awake .moon, .awake .clouds, .awake .aurora { display: none; }
 
+/* ---------- ホーム ---------- */
+
+.home {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding:
+    max(20px, env(safe-area-inset-top))
+    max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+}
+.home__card {
+  width: min(100%, 400px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: center;
+}
+.home__name { margin: 0; font-size: 30px; font-weight: 300; letter-spacing: 0.08em; }
+.home__catch { margin: 0; color: var(--muted); font-size: 14px; }
+.home__continue { font-size: 15px; min-height: 50px; }
+.home__modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.home__mode {
+  min-height: 72px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px;
+  cursor: pointer;
+}
+.home__mode-name { font-size: 16px; font-weight: 500; }
+.home__mode-sub { font-size: 12px; color: var(--muted); }
+.home__howto { margin: 0; padding-left: 1.3em; text-align: left; font-size: 13px; line-height: 1.6; color: var(--muted); }
+.home__howto li + li { margin-top: 6px; }
+.home__foot {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  opacity: 0.7;
+}
+.home__foot a { color: inherit; }
+
 /* ---------- 画面の枠 ---------- */
 
 .app {
@@ -419,27 +475,6 @@ button { font: inherit; color: inherit; }
   letter-spacing: 0.06em;
   color: var(--faint);
 }
-
-/* はじめての人への 3 行 */
-.coach {
-  position: absolute;
-  z-index: 2;
-  left: 50%;
-  top: 0;
-  translate: -50% 0;
-  width: min(372px, 100%);
-  margin: 0;
-  padding: 8px 12px;
-  border-radius: 14px;
-  background: rgba(20, 15, 52, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  font-size: 11.5px;
-  line-height: 1.5;
-  text-align: center;
-  pointer-events: none;
-}
-.coach p { margin: 0; }
-.coach p + p { margin-top: 2px; }
 
 .foot {
   display: flex;

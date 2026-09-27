@@ -42,8 +42,44 @@
     <div class="veil" id="veil"></div>
   </div>
 
-  <main class="app" id="app">
+  <!-- ホーム -->
+  <section class="home" id="home">
+    <div class="home__card">
+      <h1 class="home__name">STAY ASLEEP</h1>
+      <p class="home__catch">2 枚の扉のうち、夢が続くのは片方だけ。どこまで深く眠れるか。</p>
+
+      <button class="big home__continue" id="continueBtn" hidden>つづきから（今日の扉）</button>
+
+      <div class="home__modes">
+        <button class="home__mode" id="homeFree" type="button">
+          <span class="home__mode-name">ふだん</span>
+          <span class="home__mode-sub" id="homeFreeSub"></span>
+        </button>
+        <button class="home__mode" id="homeDaily" type="button">
+          <span class="home__mode-name">今日の扉</span>
+          <span class="home__mode-sub" id="homeDailySub"></span>
+        </button>
+      </div>
+
+      <ol class="home__howto">
+        <li>夢の中に扉が 2 枚。夢が続くのは、どちらか 1 枚だけ。</li>
+        <li>選んで開ける。夢が続けば、また 2 枚。目が覚めたら終わり。</li>
+        <li>考えても分からない、ただの運。その運を記録する。</li>
+      </ol>
+
+      <p class="home__foot">
+        <span><a href="/">T.OF...</a> のアプリ・<a href="https://t-of.github.io/contact/">問い合わせ</a></span>
+        <span class="foot__btns">
+          <button class="pill pill--s" data-wak="install" hidden>アプリにする</button>
+          <button class="pill pill--s" data-wak="share">共有</button>
+        </span>
+      </p>
+    </div>
+  </section>
+
+  <main class="app" id="app" hidden>
     <header class="bar">
+      <button class="pill" id="homeBtn">ホーム</button>
       <div class="seg" role="group" aria-label="扉の種類">
         <button class="seg__btn" id="modeFree" aria-pressed="true">ふだん</button>
         <button class="seg__btn" id="modeDaily" aria-pressed="false">今日の扉</button>
@@ -68,11 +104,6 @@
       </section>
 
       <section class="stage" id="stage">
-        <div class="coach" id="coach" hidden>
-          <p>夢の中に扉が 2 枚。夢が続くのは、どちらか 1 枚だけ。</p>
-          <p>選んで開ける。夢が続けば、また 2 枚。目が覚めたら終わり。</p>
-          <p>考えても分からない、ただの運。その運を記録する。</p>
-        </div>
         <div class="world" id="world"></div>
       </section>
 
